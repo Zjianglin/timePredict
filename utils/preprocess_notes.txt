@@ -1,0 +1,14 @@
+1. Mostly, a one-to-many relationship was found between activity codes and labels.
+The loss of information by replacing the codes with labels is secondary to the gains
+in terms of interpretability. Consequently, the new activity identification
+codes consist of the label of the activity and the name of the subprocess
+(included in the original activity codes). The addition of the subprocess name
+ connects the labels with the subprocesses to which they are related.
+ For example: ‘01_HOOFD_010’ became ‘HOOFD register submission date request’.
+
+ 2. <date />string attribute values are stored as xs:dateTime data type.
+ Times are expressed in local time, together with a time zone offset in hours and minutes.
+ A time zone offset of "+hh:mm" indicates that the date/time uses a local time zone
+ which is "hh" hours and "mm" minutes ahead of UTC. A time zone offset of "-hh:mm"
+ indicates that the date/time uses a local time zone which is "hh" hours and "mm"
+ minutes behind UTC
