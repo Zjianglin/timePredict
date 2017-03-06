@@ -12,3 +12,5 @@ codes consist of the label of the activity and the name of the subprocess
  which is "hh" hours and "mm" minutes ahead of UTC. A time zone offset of "-hh:mm"
  indicates that the date/time uses a local time zone which is "hh" hours and "mm"
  minutes behind UTC
+
+ 3. <date />  translated to floating(days) using matplotlib.dates.datestr2num

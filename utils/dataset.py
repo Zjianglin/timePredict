@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
-import matplotlib.pylab as pl
+import matplotlib.ticker as ticker
 import gzip, seaborn
 seaborn.set() #Plot styling
 
@@ -53,27 +53,65 @@ class Log(object):
                     else:#case context
                         case[feature.attrib['key']] = feature.attrib['value']
                 case['events'] = events
-                case['case_duration'] = None #!!! need to process tzinfo
+                if case.get('endDate'):
+                    case['case_duration'] = (dates.datestr2num(case['startDate']) - dates.datestr2num(case['endDate']))
+                else:
+                    case['case_duration'] = None
                 self.cases.append(case)
         return None
 
-    def get_dotted_chart(self):
-        fig, ax = plt.subplots()
+    def abs_time_chart(self, title='Handling of Building Permit Applications in The Netherlands'):
+        '''
+        Dotted chart for the process of the building permit using absolute time
+        '''
+        case_ids = []
+        fig, ax = plt.subplots(figsize=(18, 10))
         for case in self.cases:
             date = [e['time:timestamp'] for e in case['events']]
-            date = dates.datestr2num(date)
+            date = np.array(dates.datestr2num(date))
             case_id = [int(case['concept:name'])] * len(date)
-            color = 'g' if case['caseStatus'] == 'G' else 'o'
+            case_ids.append(int(case['concept:name']))
+            color = 'g' if case['caseStatus'] == 'G' else 'r'
             ax.plot_date(date, case_id, xdate=True, C=color)
-        #ax.xaxis.set_major_locator(dates.MonthLocator())
+        # format the ticks
+        ax.xaxis.set_major_locator(dates.MonthLocator(3))
         ax.xaxis.set_major_formatter(dates.DateFormatter("%Y-%m"))
-   #     ax.xaxis.set_minor_locator(dates.WeekdayLocator())
-        ax.autoscale_view()
-        ax.grid(True)
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
+        ax.set_ylim(max(case_ids) + 10, min(case_ids) - 10)
+        ax.set_title(title)
+        ax.set_xlabel('Event: time:timestamp')
+        ax.set_ylabel('Trace: concept:name')
         fig.autofmt_xdate()
-        plt.show()
+        fig.show()
+        fig.savefig("abs_time_chart.png")
+
+    def rel_time_chart(self, title=''):
+        '''
+        Dotted chart for the process of the building permit using relative time
+        '''
+        case_ids = []
+        max_time = 0
+        fig, ax = plt.subplots(figsize=(16, 9))
+        for case in self.cases:
+            date = [e['time:timestamp'] for e in case['events']]
+            date = np.array(dates.datestr2num(date))
+            date -= dates.datestr2num(case['startDate'])
+            date[date < 0] = 0
+            max_time = date.max()
+            case_id = [int(case['concept:name'])] * len(date)
+            case_ids.append(int(case['concept:name']))
+            color = 'g' if case['caseStatus'] == 'G' else 'r'
+            ax.scatter(date, case_id, c=color)
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
+        ax.set_ylim(max(case_ids) + 10, min(case_ids) - 10)
+        ax.set_title(title)
+        ax.set_xlabel('Event: time:timestamp(relative)')
+        ax.set_ylabel('Trace: concept:name')
+        #fig.show()
+        fig.savefig("rev_time_chart.png")
 
 
 if __name__ == "__main__":
      log = Log("BPIC15_1.xes.xml")
-     log.get_dotted_chart()
+     #log.abs_time_chart()
+     log.rel_time_chart()
