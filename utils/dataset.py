@@ -84,7 +84,7 @@ class Log(object):
         ax.set_ylabel('Trace: concept:name')
         fig.autofmt_xdate()
         fig.show()
-        fig.savefig("abs_time_chart.png")
+        fig.savefig("../resource/abs_time_chart.png")
 
     def rel_time_chart(self, title=''):
         '''
@@ -107,7 +107,7 @@ class Log(object):
         ax.set_xlabel('Event: time:timestamp(relative)')
         ax.set_ylabel('Trace: concept:name')
         #fig.show()
-        fig.savefig("rev_time_chart.png")
+        fig.savefig("../resource/rev_time_chart.png")
 
     def statistics(self):
         if not self.acivities:
@@ -135,7 +135,7 @@ class Log(object):
         print('Average length of case: ', '{0:.1f}'.format(all_events/all_cases))
 
 if __name__ == "__main__":
-     log = Log("BPIC15_3.xes.xml")
+     log = Log("../resource/BPIC15_3.xes.xml")
      #log.abs_time_chart()
      #log.rel_time_chart()
      log.statistics()
