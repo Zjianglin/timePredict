@@ -12,9 +12,9 @@ seaborn.set() #Plot styling
 
 class Log(object):
     def __init__(self, file=None):
-        self.event_num = 0
+        self.events = 0
         self.cases = []
-        self.acivities =  pd.Series([])
+        self.acivities =  set()
         self.global_trace = set('case_duration')
         self.global_event = set(['event_duration', 'activity_id'])
         self.__log_from_xes(file)
@@ -48,10 +48,11 @@ class Log(object):
                         event = {}
                         for s in feature:
                             event[s.attrib['key']] = s.attrib['value']
-                        event['activity_id'] = ' '.join([event['concept:name'].split('_')[1], event['activityNameEN']])
+                        event['activity_id'] = ' '.join([event['concept:name'], event['lifecycle:transition']])
                         events.append(event)
                     else:#case context
                         case[feature.attrib['key']] = feature.attrib['value']
+                events.sort(key=lambda e:e['time:timestamp'])
                 case['events'] = events
                 if case.get('endDate'):
                     case['case_duration'] = (dates.datestr2num(case['startDate']) - dates.datestr2num(case['endDate']))
@@ -90,14 +91,12 @@ class Log(object):
         Dotted chart for the process of the building permit using relative time
         '''
         case_ids = []
-        max_time = 0
         fig, ax = plt.subplots(figsize=(16, 9))
         for case in self.cases:
             date = [e['time:timestamp'] for e in case['events']]
             date = np.array(dates.datestr2num(date))
             date -= dates.datestr2num(case['startDate'])
             date[date < 0] = 0
-            max_time = date.max()
             case_id = [int(case['concept:name'])] * len(date)
             case_ids.append(int(case['concept:name']))
             color = 'g' if case['caseStatus'] == 'G' else 'r'
@@ -110,8 +109,33 @@ class Log(object):
         #fig.show()
         fig.savefig("rev_time_chart.png")
 
+    def statistics(self):
+        if not self.acivities:
+            for trace in self.cases:
+                for event in trace.get('events'):
+                    self.acivities.add(event.get('activity_id'))
+                    self.events += 1
+
+        all_cases = len(self.cases)
+        all_events = self.events
+        longest_trace = 0
+        shortest_trace = 999
+        for t in self.cases:
+            l = len(t.get('events'))
+            if l > longest_trace:
+                longest_trace = l
+            if shortest_trace > l:
+                shortest_trace = l
+
+        print('Number of cases: ', all_cases)
+        print('Number of activities: ', len(self.acivities))
+        print('Number of events: ', all_events)
+        print('Length of longest case: ', longest_trace)
+        print('Length of shortest case: ', shortest_trace)
+        print('Average length of case: ', '{0:.1f}'.format(all_events/all_cases))
 
 if __name__ == "__main__":
-     log = Log("BPIC15_1.xes.xml")
+     log = Log("BPIC15_3.xes.xml")
      #log.abs_time_chart()
-     log.rel_time_chart()
+     #log.rel_time_chart()
+     log.statistics()
