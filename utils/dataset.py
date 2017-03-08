@@ -48,7 +48,7 @@ class Log(object):
                         event = {}
                         for s in feature:
                             event[s.attrib['key']] = s.attrib['value']
-                        event['activity_id'] = ' '.join([event['concept:name'], event['lifecycle:transition']])
+                        event['activity_id'] = ' '.join([event['activityNameEN'], event['lifecycle:transition']])
                         events.append(event)
                         self.events += 1
                     else:#case context
